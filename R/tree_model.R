@@ -6,8 +6,9 @@ library(dplyr)
 library(nlme)
 
 
+tree<-read.csv(file="Data/NSVB_TREE.csv",stringsAsFactors = T)
 
-#s3a_spcd_coef <-read.csv(file="Tables/Table S3a_volob_coefs_spcd.csv",stringsAsFactors = T)
+s3a_spcd_coef <-read.csv(file="Tables/Table S3a_volob_coefs_spcd.csv",stringsAsFactors = T)
 
 #s3b_jenkins_coef <-read.csv(file="Tables/Table S3b_volob_coefs_jenkins.csv",stringsAsFactors = T)
 
