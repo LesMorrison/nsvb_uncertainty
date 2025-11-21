@@ -171,3 +171,4 @@ sp_110$var_totalbiomass <- var_stem + var_bark + var_branch
 # Total uncertainty (standard deviation)
 sp_110$sd_totalbiomass <- sqrt(sp_110$var_totalbiomass)
 
+
