@@ -15,7 +15,7 @@ source("R/nls_fitting_functions.R")
 coefs_Westfall_branch <-read.csv(file="Tables/Table S7a_branch_biomass_coefs_spcd.csv",sep=",", stringsAsFactors = F)
 
 #- stem volume dataset
-tree <- read.csv("Data/NSVB_TREE.csv", stringsAsFactors = T)
+# tree <- read.csv("Data/NSVB_TREE.csv", stringsAsFactors = T)
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 #- run the custom function for the species and region of interest

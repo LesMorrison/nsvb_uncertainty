@@ -5,43 +5,35 @@ library(openxlsx)
 library(dplyr)
 library(nlme)
 
+#Loading the dataset
 
 tree<-read.csv(file="Data/NSVB_TREE.csv",stringsAsFactors = T)
+
+ecoregion <- read.csv(file="Data/ECOREGION.csv", sep = ';',stringsAsFactors = T)
 
 s3a_spcd_coef <-read.csv(file="Tables/Table S3a_volob_coefs_spcd.csv",stringsAsFactors = T)
 
 #s3b_jenkins_coef <-read.csv(file="Tables/Table S3b_volob_coefs_jenkins.csv",stringsAsFactors = T)
 
-#Exploring the regions, no of sp and no of trees.
-reg_sp_notree<-tree %>% 
-  count(REGION,SPCD) #to see the no of sp and the no of trees in each region
-  #arrange(desc(SPCD)) #for identifying the rows with more number of trees
+#Filtering SPCD 110
+sample_sp110<-tree %>% 
+  filter(SPCD==110)
 
-sp_region<-reg_sp_notree %>% 
-   group_by(REGION) %>% 
-   summarise(SP=sum(SPCD, na.rm=TRUE)) %>% 
-  arrange(desc(SP))#number of species in each region
+length(unique(sample_sp110$REGION))
+table(sample_sp110$REGION)
 
-#Filtering Region 1 
-sample_southern<-tree %>% 
-  filter(REGION=="Southern_States") %>% 
-  #mutate(sp=factor(SPCD)) %>% 
-  group_by(SPCD) %>% 
-  summarise(n_tree=n(),.groups="drop") %>% 
-  arrange(desc(n_tree))
+#Filtering the coeficients for sp 110
+coef_sp110 <- s3a_spcd_coef %>% 
+  filter(SPCD==110)  
 
-#Filtering SPCD 111
-sp111_sample<-tree %>% 
-  filter(SPCD==111)
+# Mergin coefficients dataset and ecoregion dataset
+sp110_tree_coef <- merge(coef_sp110, ecoregion, by='DIVISION')
 
-#Filtering the coeficients for sp 111
-s3a_sp111 <- Table_S3a_volob_coefs_spcd %>% 
-  filter(SPCD==111) %>% 
-  filter(DIVISION==230) %>% 
-  filter(STDORGCD==0)
+#Merging sp110 tree dataset with its coefficients
+sp110<- sample_sp110 %>% 
+  left_join(sp110_tree_coef, by = c('SPCD','REGION'))
 
-#Merging both data bases
-sample_sp111_coef<-merge(sp111_sample, s3a_sp111, by='SPCD')
+ 
 
 #Filtering the columns of interest
 sample_sp111_coef_DHHT<-sample_sp111_coef %>% 

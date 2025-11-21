@@ -2,6 +2,7 @@
 install.packages("propagate")
 library(propagate)
 library(MASS)
+#library(dplyr)
 
 # ==============================================================================
 # Function that directly adds predictions and SE to your dataframe
@@ -49,7 +50,7 @@ add_vol_pred <- function(data, models, n_sim = 1000) {
 }
 
 # ==============================================================================
-# Apply to your data
+# Apply to the data
 # ==============================================================================
 
 # Create named list of models
@@ -62,9 +63,9 @@ models <- list(
 # Process all models at once
 sp_110 <- add_vol_pred(sp_110, models, n_sim = 1000)
 
-# Bark density uncertainty (if available)
+# Bark density uncertainty 
 mean_bark_WD<- mean(sp_110$Density_sp110, na.rm=TRUE)
-sd_bark_WD <- sd(sp_110$Density_sp110, na.rm = TRUE)
+sd_bark_WD <- sd(sp_110$bark_density_sp110, na.rm = TRUE)
 CV_bark<- sd_bark_WD/mean_bark_WD
 sp_110$Density_sp110_sd <- sd_bark_WD
 
@@ -94,11 +95,13 @@ for(sim in 1:n_sims) {
                          mean = sp_110$pred_branchvol, 
                          sd = sp_110$pred_branchvol_se)
  
- # Stem wood density: single value per simulation (species-level)
-  sim_WD_stem_sp110 <- rnorm(1, mean = WD_sp110$meanWD, sd = WD_sp110$sdWD)
+ # Stem wood density: single value per simulation (species-level
+ # mean_CV = WD_sp110$meanWD*62.428 in cubic volume
+  sim_WD_stem_sp110 <- rnorm(1, mean = WD_sp110$mean_CV, sd = WD_sp110$mean_CV_sd)
  
   # Bark density: individual values per tree WITH uncertainty
- sim_Density_bark <- rnorm(n_trees, 
+  
+  sim_Density_bark <- rnorm(n_trees, 
                            mean = sp_110$Density_sp110, 
                            sd = sp_110$Density_sp110_sd)
  
@@ -120,17 +123,19 @@ for(sim in 1:n_sims) {
   if(sim %% 100 == 0) cat("  Completed", sim, "simulations\n")
 }
 
+sp_110$total_biomass_sim<-rowMeans(biomass_simulations)
+
 # ==============================================================================
 # Calculate uncertainty metrics for individual trees
 # ==============================================================================
 
-sp_110$biomass_mean <- rowMeans(biomass_simulations)
-sp_110$biomass_median <- apply(biomass_simulations, 1, median)
-sp_110$biomass_sd <- apply(biomass_simulations, 1, sd)
-sp_110$biomass_var <- sp_110$biomass_sd^2
-sp_110$biomass_cv <- (sp_110$biomass_sd / sp_110$biomass_mean) * 100
-sp_110$biomass_ci_lower <- apply(biomass_simulations, 1, quantile, probs = 0.025)
-sp_110$biomass_ci_upper <- apply(biomass_simulations, 1, quantile, probs = 0.975)
+sp_110$biomass_mean_sim <- rowMeans(biomass_simulations)
+sp_110$biomass_median_sim <- apply(biomass_simulations, 1, median)
+sp_110$biomass_sd_sim <- apply(biomass_simulations, 1, sd)
+sp_110$biomass_var_sim <- sp_110$biomass_sd^2
+sp_110$biomass_cv_sim <- (sp_110$biomass_sd / sp_110$biomass_mean) * 100
+sp_110$biomass_ci_lower_sim <- apply(biomass_simulations, 1, quantile, probs = 0.025)
+sp_110$biomass_ci_upper_sim <- apply(biomass_simulations, 1, quantile, probs = 0.975)
 
 # ==============================================================================
 # Calculate total biomass across all trees with uncertainty
@@ -139,4 +144,30 @@ sp_110$biomass_ci_upper <- apply(biomass_simulations, 1, quantile, probs = 0.975
 # Total biomass for each simulation
 total_biomass_sims <- colSums(biomass_simulations)
 
+
+# ==============================================================================
+# Calculating total biomass directly
+# ==============================================================================
+#sp_110$barkdensity<-(sp_110$Density_sp110*62.428)
+sp_110$totalbiomass=((sp_110$pred_stemvol*WD_sp110$mean_CV)+
+                       (sp_110$pred_barkvol*sp_110$Density_sp110)+
+                       (sp_110$pred_branchvol))
+
+# Variance of each component
+# For stem: (volume * wood density)
+var_stem <- (sp_110$pred_stemvol)^2 * (WD_sp110$mean_CV_sd)^2 + 
+  (WD_sp110$mean_CV)^2 * (sp_110$pred_stemvol_se)^2
+
+# For bark: (volume * density)
+var_bark <- (sp_110$pred_barkvol)^2 * (sp_110$Density_sp110_sd)^2 + 
+  (sp_110$Density_sp110)^2 * (sp_110$pred_barkvol_se)^2
+
+# For branch: (just volume)
+var_branch <- (sp_110$pred_branchvol_se)^2
+
+# Total variance (sum of variances)
+sp_110$var_totalbiomass <- var_stem + var_bark + var_branch
+
+# Total uncertainty (standard deviation)
+sp_110$sd_totalbiomass <- sqrt(sp_110$var_totalbiomass)
 

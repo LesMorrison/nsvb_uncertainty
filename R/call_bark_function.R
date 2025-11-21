@@ -62,7 +62,7 @@ sp_110$bark_biomass <- with(sp_110,a*DO_BH^b*HT_TOT^c)
 
 # 3- Calculate Density as volume/biomass
 
-sp_110$Density_sp110 <- with(sp_110,bark_biomass/pred_barkvol)
+sp_110$bark_density_sp110 <- with(sp_110,bark_biomass/pred_barkvol)
 
 # 4- Recalculate biomass
-sp_110$biomass2 <- with(sp_110,pred_barkvol*mean(Density_sp110))
+sp_110$biomass2 <- with(sp_110,pred_barkvol*mean(bark_density_sp110))
