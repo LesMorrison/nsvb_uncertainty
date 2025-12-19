@@ -1,5 +1,5 @@
 ### Global Wood Density Database
-install.packages("BIOMASS")
+#install.packages("BIOMASS")
 library(BIOMASS)
 
 # WD is in g/cm^3, so we transform it into cubic foot volume

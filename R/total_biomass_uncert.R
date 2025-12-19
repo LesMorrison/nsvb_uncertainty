@@ -1,5 +1,5 @@
 
-install.packages("propagate")
+#install.packages("propagate")
 library(propagate)
 library(MASS)
 #library(dplyr)
