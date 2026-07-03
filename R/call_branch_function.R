@@ -21,6 +21,18 @@ coefs_Westfall_branch <-read.csv(file="Tables/Table S7a_branch_biomass_coefs_spc
 #- run the custom function for the species and region of interest
 
 #- loblolly pine in the south
-output1_branch <- nls_fitting_function_branch(species=110,region="230",params=coefs_Westfall_branch,tree=tree,plotson=T)
-summary(output1_branch)
+outputOR240_branch <- nls_fitting_function_branch(species=202,region="240",params=coefs_Westfall_branch,tree=tree,plotson=T)
+summary(outputOR240_branch)
+
+
+# Saving the outputs in one file
+output_OR240 <- list(
+  out_tree = outputOR240_tree,
+  out_bark = outputOR240_bark,
+  out_branch = outputOR240_branch
+)
+
+#saveRDS(output_1, file = "output_1.rds")
+save(outputOR240_tree, outputOR240_bark, outputOR240_branch, file = "R/output_OR240.RData")
+
 
